@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "response.handlers.base-packages",
+      "type": "java.lang.String",
+      "description": "统一响应处理器作用的包，当在范围外使用注解时，不会封装."
+    },
+    {
+      "name": "response.handlers.time-record",
+      "type": "java.lang.Boolean",
+      "description": "开启接口计时（仅仅是利用AOP进行计时，并不精细，在哪都可以用）."
+    },
+    {
+      "name": "response.handlers.result-handler",
+      "type": "java.lang.Boolean",
+      "description": "开启响应结果统一处理器."
+    }
+  ]
+}
