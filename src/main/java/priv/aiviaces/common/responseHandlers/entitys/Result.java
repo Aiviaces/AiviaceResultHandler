@@ -34,6 +34,7 @@ public class Result<T> {
         Result<T> result = new Result<>();
         result.setCode(code);
         result.setMessage(message);
+        result.setData(null);
         return result;
     }
 

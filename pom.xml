@@ -39,19 +39,13 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <!-- Other dependencies if needed -->
-    </dependencies>
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>2.0.40</version>
+        </dependency>
 
-    <!--<build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                &lt;!&ndash; 注释掉或删除此插件 &ndash;&gt;
-                &lt;!&ndash; <executions>...</executions> &ndash;&gt;
-            </plugin>
-        </plugins>
-    </build>-->
+    </dependencies>
 
     <build>
         <resources>

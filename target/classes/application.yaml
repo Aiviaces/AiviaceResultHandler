@@ -3,3 +3,4 @@ response:
     base-packages: ''
     time-record: false
     result-handler: true
+    result-handler-ignore-header: ''

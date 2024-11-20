@@ -4,5 +4,6 @@ F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandler
 F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandlers\handler\ResponseResultHandler.java
 F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandlers\annotations\ResponseResult.java
 F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandlers\ResponseHandlersAutoConfiguration.java
+F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandlers\annotations\ForceEnable.java
 F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandlers\entitys\Result.java
 F:\Data\MyJars\result-handler\src\main\java\priv\aiviaces\common\responseHandlers\aops\ResponseTimeAspect.java

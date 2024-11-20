@@ -11,7 +11,7 @@ import priv.aiviaces.common.responseHandlers.annotations.ResponseTimeRecord;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-@Slf4j
+@Slf4j(topic = "response-handler-timer")
 @Aspect
 @Component
 public class ResponseTimeAspect {
