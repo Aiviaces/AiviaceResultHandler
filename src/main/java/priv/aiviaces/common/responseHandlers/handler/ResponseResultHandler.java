@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -14,6 +15,8 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +27,8 @@ import priv.aiviaces.common.responseHandlers.annotations.ResponseResult;
 import priv.aiviaces.common.responseHandlers.entitys.Result;
 import priv.aiviaces.common.responseHandlers.errors.ResultReturnError;
 import priv.aiviaces.common.responseHandlers.errors.ResultReturnWarn;
+
+import java.util.List;
 
 @Slf4j(topic = "response-handler-result")
 @Component
@@ -171,6 +176,18 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
         return Result.error(ex.getCode(), message != null ? message : this.errorMessage);
     }
 
+    @ExceptionHandler(BindException.class)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ResponseBody
+    public Result<Object> handleBindExceptions(BindException e) {
+        log.error("封装Result对象前存在参数效验错误: {}", e.getMessage(), e);
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        List<String> collect = fieldErrors.stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+        return Result.error(400, String.join(",", collect));
+    }
+
     @ExceptionHandler(Exception.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ResponseBody
@@ -178,4 +195,6 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
         log.error("封装Result对象时发生错误: {}", ex.getMessage(), ex);
         return Result.error(500, "系统内部错误");
     }
+
+
 }
