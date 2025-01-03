@@ -1,9 +1,0 @@
-priv\aiviaces\common\responseHandlers\annotations\ResponseTimeRecord.class
-priv\aiviaces\common\responseHandlers\annotations\ResponseResult.class
-priv\aiviaces\common\responseHandlers\handler\ResponseResultHandler.class
-priv\aiviaces\common\responseHandlers\errors\ResultReturnWarn.class
-priv\aiviaces\common\responseHandlers\entitys\Result.class
-priv\aiviaces\common\responseHandlers\annotations\ForceEnable.class
-priv\aiviaces\common\responseHandlers\ResponseHandlersAutoConfiguration.class
-priv\aiviaces\common\responseHandlers\aops\ResponseTimeAspect.class
-priv\aiviaces\common\responseHandlers\errors\ResultReturnError.class
