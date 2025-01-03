@@ -17,6 +17,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -176,7 +177,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
         return Result.error(ex.getCode(), message != null ? message : this.errorMessage);
     }
 
-    @ExceptionHandler(BindException.class)
+    @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ResponseBody
     public Result<Object> handleBindExceptions(BindException e) {
