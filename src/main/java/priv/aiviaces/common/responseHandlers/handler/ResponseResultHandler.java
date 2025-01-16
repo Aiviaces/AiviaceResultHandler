@@ -1,6 +1,7 @@
 package priv.aiviaces.common.responseHandlers.handler;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ import priv.aiviaces.common.responseHandlers.annotations.ForceEnable;
 import priv.aiviaces.common.responseHandlers.annotations.ResponseResult;
 import priv.aiviaces.common.responseHandlers.entitys.Result;
 import priv.aiviaces.common.responseHandlers.errors.ResultReturnError;
+import priv.aiviaces.common.responseHandlers.errors.ResultReturnInfo;
 import priv.aiviaces.common.responseHandlers.errors.ResultReturnWarn;
 
 import java.util.List;
@@ -47,7 +49,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 
     @PostConstruct
     public void init() {
-        if (this.basePackages != null) this.basePackages = this.basePackages.trim();
+        if (this.basePackages!= null) this.basePackages = this.basePackages.trim();
         else this.basePackages = "";
         if (basePackages.isEmpty()) {
             log.warn("ResponseResultHandler(统一结果处理器) inited, basePackages is empty, will handle all classes");
@@ -56,7 +58,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 
     private boolean isInBasePackages(Class<?> targetClass) {
         if (basePackages == null || basePackages.isEmpty()) {
-            return true; // 如果没有指定basePackages，包含所有
+            return true; // 如果没有指定 basePackages，包含所有
         }
         String classPackage = targetClass.getPackageName();
 
@@ -96,7 +98,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
         }
 
         // 检查方法上的注解
-        if (returnType.getMethod() != null
+        if (returnType.getMethod()!= null
             && returnType.getMethod().isAnnotationPresent(ResponseResult.class)) {
             ResponseResult methodAnnotation = returnType.getMethod().getAnnotation(ResponseResult.class);
             this.successMessage = methodAnnotation.successMessage();
@@ -117,36 +119,40 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
                                   @NonNull ServerHttpRequest request,
                                   @NonNull ServerHttpResponse response
     ) {
+        Class<?> bodyClass = null;
         if (body != null) {
-            log.debug("返回结果类型： {}", body.getClass().getName());
+            bodyClass = body.getClass();
+            log.debug("返回结果类型： {}", bodyClass.getName());
         } else {
             log.warn("返回结果类型，读取到空值！");
         }
 
         if (body instanceof Result) {
-            // 如果已经是Result类型，则直接返回
+            // 如果已经是 Result 类型，则直接返回
             return body;
         }
 
         Result<Object> result;
 
-        // 设置返回值类型为Json
+        // 设置返回值类型为 Json
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         if (body instanceof String) {
-            // 如果已经是字符串类型类型，由于自带的String消息转化器会再做处理，导致类型转换报错，直接转json返回
+            // 如果已经是字符串类型类型，由于自带的 String 消息转化器会再做处理，导致类型转换报错，直接转 json 返回
             try {
                 String resultToJson = convertStringResultToJson(Result.success(this.successMessage, body));
-                log.debug("===> 预处理纯字符串 ...");
-                log.debug("===> 封装Result对象完成: " + resultToJson);
+                log.debug("===> 预处理纯字符串...");
+                log.debug("===> 封装 Result 对象完成: " + resultToJson);
                 return resultToJson;
             } catch (Exception e) {
                 log.error("转化字符串返回值时产生异常", e);
                 return convertStringResultToJson(Result.error(500, "系统内部错误"));
             }
         }
+        // 可以继续添加更多的基础数据类型检查，如 Float, Long, Short 等
+
         result = Result.success(this.successMessage, body);
-        log.debug("===> 封装Result对象完成: " + result);
+        log.debug("===> 封装 Result 对象完成: " + result);
         return result;
     }
 
@@ -159,13 +165,22 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
                "}";
     }
 
+    @ExceptionHandler(ResultReturnInfo.class)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ResponseBody
+    public Result<?> handleResultReturnInfo(ResultReturnInfo ex) {
+        Result<?> result = ex.getResult();
+        log.debug("封装 Result 对象时主动返回信息: {}", result);
+        return result;
+    }
+
     @ExceptionHandler(ResultReturnWarn.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ResponseBody
     public Result<Object> handleResultReturnWarn(ResultReturnWarn ex) {
         String message = ex.getMessage();
-        log.warn("封装Result对象时主动抛出警告: {}", ex.getMessage());
-        return Result.error(ex.getCode(), message != null ? message : this.warnMessage);
+        log.warn("封装 Result 对象时主动抛出警告: {}", ex.getMessage());
+        return Result.warn(ex.getCode(), message!= null? message : this.warnMessage,null);
     }
 
     @ExceptionHandler(ResultReturnError.class)
@@ -173,15 +188,19 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
     @ResponseBody
     public Result<Object> handleResultReturnError(ResultReturnError ex) {
         String message = ex.getMessage();
-        log.error("封装Result对象时主动抛出异常: {}", ex.getMessage(), ex);
-        return Result.error(ex.getCode(), message != null ? message : this.errorMessage);
+        log.error("封装 Result 对象时主动抛出异常: {}", ex.getMessage(), ex);
+        return Result.error(ex.getCode(), message!= null? message : this.errorMessage);
     }
 
-    @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
+    @ExceptionHandler({
+            BindException.class,
+            MethodArgumentNotValidException.class,
+            ConstraintViolationException.class
+    })
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ResponseBody
     public Result<Object> handleBindExceptions(BindException e) {
-        log.error("封装Result对象前存在参数效验错误: {}", e.getMessage(), e);
+        log.error("封装 Result 对象前存在参数效验错误: {}", e.getMessage(), e);
         List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
         List<String> collect = fieldErrors.stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
@@ -193,9 +212,8 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ResponseBody
     public Result<Object> handleOtherExceptions(Exception ex) {
-        log.error("封装Result对象时发生错误: {}", ex.getMessage(), ex);
+        log.error("封装 Result 对象时发生错误: {}", ex.getMessage(), ex);
         return Result.error(500, "系统内部错误");
     }
-
 
 }
